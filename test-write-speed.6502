@@ -84,4 +84,7 @@ ORG &2000
 
 .end
 
+PUTBASIC "BENCHRAM.BAS", "TESTRAM"
+PUTBASIC "BENCHROM.BAS", "TESTROM"
+
 SAVE "writes", start, end, start, start
