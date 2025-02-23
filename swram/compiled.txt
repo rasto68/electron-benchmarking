@@ -1,0 +1,70 @@
+.load
+     2000   A9 0F      LDA #&0F
+     2002   85 F4      STA &F4
+     2004   8D 05 FE   STA &FE05
+     2007   A9 00      LDA #&00
+     2009   85 F4      STA &F4
+     200B   8D 05 FE   STA &FE05
+     200E   A2 5D      LDX #&5D
+.relocate_loop
+     2010   BD 1C 20   LDA &201C,X
+     2013   9D 00 80   STA &8000,X
+     2016   CA         DEX
+     2017   10 F7      BPL &2010
+     2019   4C 00 80   JMP &8000
+.load_end
+.relocated_benchmark_start
+.start
+     8000   A9 16      LDA #&16
+     8002   20 EE FF   JSR &FFEE
+     8005   A9 02      LDA #&02
+     8007   20 EE FF   JSR &FFEE
+     800A   A9 00      LDA #&00
+     800C   85 70      STA &70
+     800E   85 71      STA &71
+     8010   78         SEI
+     8011   A9 44      LDA #&44
+     8013   8D 04 02   STA &0204
+     8016   A9 80      LDA #&80
+     8018   8D 05 02   STA &0205
+     801B   A9 04      LDA #&04
+     801D   8D 00 FE   STA &FE00
+     8020   58         CLI
+.benchmark_start
+     8021   A5 70      LDA &70
+     8023   F0 FC      BEQ &8021
+.benchmark_loop
+     8025   A5 71      LDA &71
+     8027   D0 1A      BNE &8043
+.smc1
+     8029   AD 00 21   LDA &2100
+.smc2
+     802C   8D 00 30   STA &3000
+     802F   EE 2A 80   INC &802A
+     8032   EE 2D 80   INC &802D
+     8035   F0 03      BEQ &803A
+     8037   4C 25 80   JMP &8025
+.inc_page
+     803A   EE 2B 80   INC &802B
+     803D   EE 2E 80   INC &802E
+     8040   4C 25 80   JMP &8025
+.exit_benchmark
+     8043   60         RTS
+.interrupt_handler
+     8044   08         PHP
+     8045   A9 10      LDA #&10
+     8047   8D 05 FE   STA &FE05
+     804A   A5 70      LDA &70
+     804C   F0 07      BEQ &8055
+     804E   A9 01      LDA #&01
+     8050   85 71      STA &71
+     8052   4C 59 80   JMP &8059
+.start_benchmark
+     8055   A9 01      LDA #&01
+     8057   85 70      STA &70
+.exit
+     8059   28         PLP
+     805A   A5 FC      LDA &FC
+     805C   40         RTI
+.end
+Saving file 'writes'

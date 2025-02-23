@@ -1,0 +1,56 @@
+.start
+     2000   A9 16      LDA #&16
+     2002   20 EE FF   JSR &FFEE
+     2005   A9 02      LDA #&02
+     2007   20 EE FF   JSR &FFEE
+     200A   A9 00      LDA #&00
+     200C   85 70      STA &70
+     200E   85 71      STA &71
+     2010   78         SEI
+     2011   A9 44      LDA #&44
+     2013   8D 04 02   STA &0204
+     2016   A9 20      LDA #&20
+     2018   8D 05 02   STA &0205
+     201B   A9 04      LDA #&04
+     201D   8D 00 FE   STA &FE00
+     2020   58         CLI
+.benchmark_start
+     2021   A5 70      LDA &70
+     2023   F0 FC      BEQ &2021
+.benchmark_loop
+     2025   A5 71      LDA &71
+     2027   D0 1A      BNE &2043
+.smc1
+     2029   AD 00 80   LDA &8000
+.smc2
+     202C   8D 00 30   STA &3000
+     202F   EE 2A 20   INC &202A
+     2032   EE 2D 20   INC &202D
+     2035   F0 03      BEQ &203A
+     2037   4C 25 20   JMP &2025
+.inc_page
+     203A   EE 2B 20   INC &202B
+     203D   EE 2E 20   INC &202E
+     2040   4C 25 20   JMP &2025
+.exit_benchmark
+     2043   60         RTS
+.interrupt_handler
+     2044   08         PHP
+     2045   A9 1B      LDA #&1B
+     2047   8D 05 FE   STA &FE05
+     204A   A5 70      LDA &70
+     204C   F0 07      BEQ &2055
+     204E   A9 01      LDA #&01
+     2050   85 71      STA &71
+     2052   4C 59 20   JMP &2059
+.start_benchmark
+     2055   A9 01      LDA #&01
+     2057   85 70      STA &70
+.exit
+     2059   28         PLP
+     205A   A5 FC      LDA &FC
+     205C   40         RTI
+.source
+     2100
+.end
+Saving file 'writes'
