@@ -1,0 +1,110 @@
+SHEILA_INTERRUPT_CONTROL = &fe00
+SHEILA_SCREEN_START_HI = &fe03
+SHEILA_INTERRUPT_CLEAR_AND_PAGE_ROM = &fe05
+SHIELA_COUNTER = &fe06
+SHEILA_SOUND_FREQUENCY = SHIELA_COUNTER
+SHEILA_MISCELLANEOUS = &fe07
+SHEILA_COLOUR_PALETTE = &fe08
+
+OSWRCH = &ffee
+OSBYTE = &fff4
+OSCLI = &fff7
+
+screen_start = &3000
+
+ORG &2000
+.load
+    ; select RAM bank 0
+    lda #&0f ; enable extended ROM bank selection
+    sta &f4
+    sta SHEILA_INTERRUPT_CLEAR_AND_PAGE_ROM 
+    lda #0 ; select bank 0
+    sta &f4
+    sta SHEILA_INTERRUPT_CLEAR_AND_PAGE_ROM
+
+    ; now relocate the benchmark code to &8000
+    ldx #end - start
+    
+.relocate_loop
+    lda relocated_benchmark_start, x
+    sta &8000, x
+    dex
+    bpl relocate_loop
+    jmp &8000
+
+.load_end
+.relocated_benchmark_start
+
+ORG &8000
+
+.start
+    ; Set MODE 2
+    lda #&16
+    jsr OSWRCH
+    lda #2
+    jsr OSWRCH
+
+    lda #0
+    sta &70
+    sta &71
+
+    sei
+    lda #lo(interrupt_handler)
+    sta &204
+    lda #hi(interrupt_handler)
+    sta &205
+
+    ; only enable vsync interrupts
+    lda #4
+    sta SHEILA_INTERRUPT_CONTROL
+    cli
+
+.benchmark_start
+    ; wait for vsync before starting
+    lda &70
+    beq benchmark_start
+
+.benchmark_loop
+    lda &71
+    bne exit_benchmark
+
+.smc1
+    lda &2100
+.smc2
+    sta screen_start
+    inc smc1 + 1
+    inc smc2 + 1
+    beq inc_page
+    jmp benchmark_loop
+.inc_page
+    inc smc1 + 2
+    inc smc2 + 2
+    jmp benchmark_loop
+
+.exit_benchmark
+    rts
+
+.interrupt_handler
+    php
+    lda #%00010000
+    sta SHEILA_INTERRUPT_CLEAR_AND_PAGE_ROM
+    lda &70    
+    beq start_benchmark
+    lda #1
+    sta &71
+    jmp exit
+.start_benchmark
+    lda #1
+    sta &70    
+.exit
+    plp
+    lda &fc
+    rti
+.end
+
+COPYBLOCK start,end, relocated_benchmark_start
+
+PUTBASIC "BENCHRAM.BAS", "TESTRAM"
+PUTBASIC "BENCHROM.BAS", "TESTROM"
+
+SAVE "writes", load, relocated_benchmark_start + (end - start), load

@@ -1,0 +1,1 @@
+beebasm -w -i .\test-write-speed.6502 -do swram-writes.ssd -opt 3 -v > compiled.txt
